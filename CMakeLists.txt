@@ -27,7 +27,7 @@ if ( APPLE )
 endif()
 
 # Main project information
-project( GDExtensionTemplate
+project( OpenCVGodot
     LANGUAGES
         CXX
     VERSION
@@ -136,7 +136,10 @@ set_target_properties( godot-cpp
         CXX_VISIBILITY_PRESET hidden    # visibility needs to be the same as the main library
 )
 
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 target_link_libraries( ${PROJECT_NAME}
     PRIVATE
         godot-cpp
+		${OpenCV_LIBS}
 )

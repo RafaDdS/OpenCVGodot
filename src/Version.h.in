@@ -6,7 +6,7 @@
 
 // Creates a version number for use in macro comparisons.
 //
-// Example:
+// OpenCVGodot:
 //
 // // Check if the version is less than 2.1.0
 // #if ${UPPER_PROJECT_NAME}_VERSION < ${UPPER_PROJECT_NAME}_VERSION_CHECK(2, 1, 0)

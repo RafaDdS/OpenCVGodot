@@ -2,8 +2,8 @@
 
 target_sources( ${PROJECT_NAME}
     PRIVATE
-        Example.h
-        Example.cpp
+        OpenCVGodot.h
+        OpenCVGodot.cpp
         GDExtensionTemplate.h
         GDExtensionTemplate.cpp
         RegisterExtension.cpp

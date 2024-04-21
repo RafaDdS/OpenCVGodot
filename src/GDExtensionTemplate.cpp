@@ -7,7 +7,7 @@
 #include "Version.h"
 
 /// @file
-/// GDExtensionTemplate example implementation.
+/// GDExtensionTemplate OpenCVGodot implementation.
 
 /*!
 @brief Get the version string for this extension.

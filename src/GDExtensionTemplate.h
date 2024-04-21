@@ -6,7 +6,7 @@
 namespace godot
 {
     class ClassDB;
-};
+}
 
 class GDExtensionTemplate : public godot::Object
 {
