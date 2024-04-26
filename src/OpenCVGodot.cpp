@@ -4,6 +4,7 @@
 #include "godot_cpp/classes/label.hpp"
 #include "godot_cpp/core/class_db.hpp"
 #include "godot_cpp/variant/utility_functions.hpp"
+#include "godot_cpp/classes/image.hpp"
 
 #include <opencv2/opencv.hpp>
 #include <unistd.h>
@@ -14,139 +15,148 @@
 // Used to mark unused parameters to indicate intent and suppress warnings.
 #define UNUSED( expr ) (void)( expr )
 
-namespace
-{
-    constexpr int MAGIC_NUMBER = 42;
 
-    class MyCallableCustom : public godot::CallableCustom
-    {
-    public:
-        virtual uint32_t hash() const
-        {
-            return 27;
-        }
+using namespace godot;
 
-        virtual godot::String get_as_text() const
-        {
-            return "<MyCallableCustom>";
-        }
 
-        static bool compare_equal_func( const CallableCustom *inA, const CallableCustom *inB )
-        {
-            return inA == inB;
-        }
+Mat::Mat(){
+	if (image == nullptr) {
+        image = Ref<Image>(memnew(Image));
+    }
+}
 
-        virtual CompareEqualFunc get_compare_equal_func() const
-        {
-            return &MyCallableCustom::compare_equal_func;
-        }
+Mat::~Mat(){}
 
-        static bool compare_less_func( const CallableCustom *inA, const CallableCustom *inB )
-        {
-            return reinterpret_cast<const void *>( inA ) < reinterpret_cast<const void *>( inB );
-        }
+void Mat::content(){}
 
-        virtual CompareLessFunc get_compare_less_func() const
-        {
-            return &MyCallableCustom::compare_less_func;
-        }
+Ref<Image> Mat::getImage(){
+	return image;
+}
 
-        bool is_valid() const
-        {
-            return true;
-        }
+void Mat::setImage(Ref<Image> _image){
 
-        virtual godot::ObjectID get_object() const
-        {
-            return godot::ObjectID();
-        }
+    image = _image;
+}
 
-        virtual void call( const godot::Variant **inArguments, int inArgcount,
-                           godot::Variant &outReturnValue,
-                           GDExtensionCallError &outCallError ) const
-        {
-            UNUSED( inArguments );
-            UNUSED( inArgcount );
-
-            outReturnValue = "Hi";
-            outCallError.error = GDEXTENSION_CALL_OK;
-        }
-    };
+void Mat::_bind_methods(){
+	ClassDB::bind_method( D_METHOD( "get_Image" ),
+                                 &Mat::getImage );
+    ClassDB::bind_method( D_METHOD( "set_Image", "Image" ),
+                                 &Mat::setImage );
 }
 
 
 OpenCVGodot::OpenCVGodot()
 {
-    godot::UtilityFunctions::print( "Constructor." );
+    UtilityFunctions::print( "Constructor." );
 }
 
 OpenCVGodot::~OpenCVGodot()
 {
-    godot::UtilityFunctions::print( "Destructor." );
+    UtilityFunctions::print( "Destructor." );
 }
 
 // Methods.
 void OpenCVGodot::simpleFunc()
 {
-    godot::UtilityFunctions::print( "  Simple func called." );
+    UtilityFunctions::print( "  Simple func called." );
 }
 
-void OpenCVGodot::emitCustomSignal( const godot::String &inName, int inValue )
+void OpenCVGodot::emitCustomSignal( const String &inName, int inValue )
 {
     emit_signal( "custom_signal", inName, inValue );
 }
 
 // Static methods
-int OpenCVGodot::testStatic( godot::String path)
+Ref<Image> OpenCVGodot::takePicture( )
 {
-	cv::Mat image;
- 	image = imread( "path", cv::IMREAD_COLOR );
 
-	godot::UtilityFunctions::print( "Dims" );
-	godot::UtilityFunctions::print( image.dims );
+	auto empty = Ref<Image>(memnew(Image));
 
-	char pBuf[256];
-	size_t len = sizeof(pBuf); 
+	cv::Mat frame;
 
-	godot::UtilityFunctions::print( "pBuf" );
-	godot::UtilityFunctions::print( pBuf );
+	cv::VideoCapture cap;
 
-	int bytes = MIN(readlink("/proc/self/exe", pBuf, len), len - 1);
-	if(bytes >= 0)
-		pBuf[bytes] = '\0';
+	int deviceID = 0; // 0 = open default camera
+	int apiID = cv::CAP_ANY; // 0 = autodetect default API
+	UtilityFunctions::print( deviceID );
+	UtilityFunctions::print( apiID );
 
-	godot::UtilityFunctions::print( "bytes" );
-	godot::UtilityFunctions::print( bytes );
+	
 
-    return bytes;
+	cap.open(deviceID, apiID);
+
+	if (!cap.isOpened()) {
+		UtilityFunctions::print( "ERROR! Unable to open camera\n" );
+		return empty;
+	}
+
+	cap.read(frame);
+
+	
+	if (frame.empty()) {
+		UtilityFunctions::print( "ERROR! blank frame grabbed\n" );
+		return empty;
+	}
+
+	
+
+	Array* array = memnew(Array);
+
+	uint8_t* pixelPtr = (uint8_t*)frame.data;
+	int cn = frame.channels();
+	cv::Scalar_<uint8_t> bgrPixel;
+
+	for(int i = 0; i < frame.rows; i++)
+	{
+		for(int j = 0; j < frame.cols; j++)
+		{
+			auto B = pixelPtr[i*frame.cols*cn + j*cn + 0]; // B
+			auto G = pixelPtr[i*frame.cols*cn + j*cn + 1]; // G
+			auto R = pixelPtr[i*frame.cols*cn + j*cn + 2]; // R
+			
+			// do something with BGR values...
+			array->append(R);
+			array->append(G);
+			array->append(B);
+		}
+	}
+	
+	
+
+	UtilityFunctions::print( array );
+
+	auto output = Image::create_from_data (frame.cols, frame.rows, false, Image::Format::FORMAT_RGB8, PackedByteArray(*array));
+
+	return output;
 }
 
 void OpenCVGodot::_bind_methods()
 {
     // Methods.
-    godot::ClassDB::bind_method( godot::D_METHOD( "simple_func" ), &OpenCVGodot::simpleFunc );
-    godot::ClassDB::bind_static_method( "OpenCVGodot", godot::D_METHOD( "test_static", "path" ),
-                                        &OpenCVGodot::testStatic );
+    ClassDB::bind_method( D_METHOD( "simple_func" ), &OpenCVGodot::simpleFunc );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "take_picture" ),
+                                        &OpenCVGodot::takePicture );
 
 
 
 
     // Signals.
-    ADD_SIGNAL( godot::MethodInfo( "custom_signal",
-                                   godot::PropertyInfo( godot::Variant::STRING, "name" ),
-                                   godot::PropertyInfo( godot::Variant::INT, "value" ) ) );
-    godot::ClassDB::bind_method( godot::D_METHOD( "emit_custom_signal", "name", "value" ),
+    ADD_SIGNAL( MethodInfo( "custom_signal",
+                                   PropertyInfo( Variant::STRING, "name" ),
+                                   PropertyInfo( Variant::INT, "value" ) ) );
+    ClassDB::bind_method( D_METHOD( "emit_custom_signal", "name", "value" ),
                                  &OpenCVGodot::emitCustomSignal );
 }
 
 void OpenCVGodot::_notification( int inWhat )
 {
-    //godot::UtilityFunctions::print( "Notification: ", godot::String::num( inWhat ) );
+    //UtilityFunctions::print( "Notification: ", String::num( inWhat ) );
 }
 
-bool OpenCVGodot::_set( const godot::StringName &inName, const godot::Variant &inValue )
+bool OpenCVGodot::_set( const StringName &inName, const Variant &inValue )
 {
-    godot::String name = inName;
+    String name = inName;
 
     if ( name.begins_with( "dproperty" ) )
     {
@@ -166,9 +176,9 @@ bool OpenCVGodot::_set( const godot::StringName &inName, const godot::Variant &i
     return false;
 }
 
-bool OpenCVGodot::_get( const godot::StringName &inName, godot::Variant &outReturn ) const
+bool OpenCVGodot::_get( const StringName &inName, Variant &outReturn ) const
 {
-    godot::String name = inName;
+    String name = inName;
 
     if ( name.begins_with( "dproperty" ) )
     {
@@ -188,21 +198,21 @@ bool OpenCVGodot::_get( const godot::StringName &inName, godot::Variant &outRetu
     return false;
 }
 
-void OpenCVGodot::_get_property_list( godot::List<godot::PropertyInfo> *outList ) const
+void OpenCVGodot::_get_property_list( List<PropertyInfo> *outList ) const
 {
-    outList->push_back( godot::PropertyInfo( godot::Variant::VECTOR3, "property_from_list" ) );
+    outList->push_back( PropertyInfo( Variant::VECTOR3, "property_from_list" ) );
 
     for ( int i = 0; i < 3; ++i )
     {
         outList->push_back(
-            godot::PropertyInfo( godot::Variant::VECTOR2, "dproperty_" + godot::itos( i ) ) );
+            PropertyInfo( Variant::VECTOR2, "dproperty_" + itos( i ) ) );
     }
 }
 
-bool OpenCVGodot::_property_can_revert( const godot::StringName &inName ) const
+bool OpenCVGodot::_property_can_revert( const StringName &inName ) const
 {
-    if ( inName == godot::StringName( "property_from_list" ) &&
-         mPropertyFromList != godot::Vector3( MAGIC_NUMBER, MAGIC_NUMBER, MAGIC_NUMBER ) )
+    if ( inName == StringName( "property_from_list" ) &&
+         mPropertyFromList != Vector3( 1, 1, 1 ) )
     {
         return true;
     }
@@ -210,12 +220,12 @@ bool OpenCVGodot::_property_can_revert( const godot::StringName &inName ) const
     return false;
 }
 
-bool OpenCVGodot::_property_get_revert( const godot::StringName &inName,
-                                    godot::Variant &outProperty ) const
+bool OpenCVGodot::_property_get_revert( const StringName &inName,
+                                    Variant &outProperty ) const
 {
-    if ( inName == godot::StringName( "property_from_list" ) )
+    if ( inName == StringName( "property_from_list" ) )
     {
-        outProperty = godot::Vector3( MAGIC_NUMBER, MAGIC_NUMBER, MAGIC_NUMBER );
+        outProperty = Vector3( 1, 1, 1 );
 
         return true;
     }
@@ -223,18 +233,18 @@ bool OpenCVGodot::_property_get_revert( const godot::StringName &inName,
     return false;
 }
 
-void OpenCVGodot::_validate_property( godot::PropertyInfo &inProperty ) const
+void OpenCVGodot::_validate_property( PropertyInfo &inProperty ) const
 {
-    godot::String name = inProperty.name;
+    String name = inProperty.name;
 
     // Test hiding the "mouse_filter" property from the editor.
     if ( name == "mouse_filter" )
     {
-        inProperty.usage = godot::PROPERTY_USAGE_NO_EDITOR;
+        inProperty.usage = PROPERTY_USAGE_NO_EDITOR;
     }
 }
 
-godot::String OpenCVGodot::_to_string() const
+String OpenCVGodot::_to_string() const
 {
-    return "[ GDExtension::OpenCVGodot <--> Instance ID:" + godot::uitos( get_instance_id() ) + " ]";
+    return "[ GDExtension::OpenCVGodot <--> Instance ID:" + uitos( get_instance_id() ) + " ]";
 }

@@ -26,8 +26,8 @@ namespace
             return;
         }
 
+		godot::ClassDB::register_class<Mat>();
         godot::ClassDB::register_class<OpenCVGodot>();
-
         godot::ClassDB::register_class<GDExtensionTemplate>();
     }
 
