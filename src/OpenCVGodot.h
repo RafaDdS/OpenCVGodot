@@ -9,52 +9,50 @@
 #include "godot_cpp/core/binder_common.hpp"
 #include "godot_cpp/variant/variant.hpp"
 
-#include <godot_cpp/classes/object.hpp>
 #include "godot_cpp/classes/image.hpp"
+#include <godot_cpp/classes/object.hpp>
 #include <opencv2/opencv.hpp>
 
 using namespace godot;
 
-class Mat : public RefCounted {
-    GDCLASS(Mat, RefCounted)
+class Mat : public RefCounted
+{
+    GDCLASS( Mat, RefCounted )
 
-    protected:
-    	static void _bind_methods();
+protected:
+    static void _bind_methods();
 
-    public:
-		Mat();
-		Mat(String path);
-		~Mat();
+public:
+    Mat();
+    Mat( String path );
+    ~Mat();
 
-		Ref<Image> image;
-		Ref<Image> get_image();
-		void set_image(Ref<Image> _image);
+    Ref<Image> image;
+    Ref<Image> get_image();
+    void set_image( Ref<Image> _image );
 
-		cv::Mat get_mat();
-		void set_mat(cv::Mat _mat);
+    cv::Mat get_mat();
+    void set_mat( cv::Mat _mat );
 
-		void content();
+    void content();
 
-		cv::Mat mat;
+    cv::Mat mat;
 };
-
 
 class OpenCVGodot : public Node
 {
     GDCLASS( OpenCVGodot, Node )
 
 public:
-
     OpenCVGodot();
     ~OpenCVGodot() override;
 
-	
-	static Ref<Mat> subtract(Ref<Mat> mat1, Ref<Mat> mat2);
-    
+    static Ref<Mat> subtract( Ref<Mat> mat1, Ref<Mat> mat2 );
+
     void emitCustomSignal( const String &inName, int inValue );
 
     // Static method.
-    static Ref<Mat> takePicture( );
+    static Ref<Mat> takePicture();
 
 protected:
     static void _bind_methods();
@@ -74,6 +72,3 @@ private:
     Vector3 mPropertyFromList;
     Vector2 mDProp[3];
 };
-
-
-
