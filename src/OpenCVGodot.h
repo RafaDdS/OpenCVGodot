@@ -15,22 +15,27 @@
 
 using namespace godot;
 
-class Mat : public Object {
-    GDCLASS(Mat, Object)
+class Mat : public RefCounted {
+    GDCLASS(Mat, RefCounted)
 
     protected:
     	static void _bind_methods();
 
     public:
 		Mat();
+		Mat(String path);
 		~Mat();
+
 		Ref<Image> image;
-		Ref<Image> getImage();
-		void setImage(Ref<Image> _image);
+		Ref<Image> get_image();
+		void set_image(Ref<Image> _image);
+
+		cv::Mat get_mat();
+		void set_mat(cv::Mat _mat);
 
 		void content();
 
-		cv::Mat data;
+		cv::Mat mat;
 };
 
 
@@ -43,13 +48,13 @@ public:
     OpenCVGodot();
     ~OpenCVGodot() override;
 
-    // Functions.
-    void simpleFunc();
+	
+	static Ref<Mat> subtract(Ref<Mat> mat1, Ref<Mat> mat2);
     
     void emitCustomSignal( const String &inName, int inValue );
 
     // Static method.
-    static Ref<Image> takePicture( );
+    static Ref<Mat> takePicture( );
 
 protected:
     static void _bind_methods();

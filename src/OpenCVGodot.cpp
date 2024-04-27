@@ -25,24 +25,65 @@ Mat::Mat(){
     }
 }
 
+Mat::Mat(String path){
+	if (image == nullptr) {
+        image = Ref<Image>(memnew(Image));
+    }
+}
+
 Mat::~Mat(){}
 
 void Mat::content(){}
 
-Ref<Image> Mat::getImage(){
+Ref<Image> Mat::get_image(){
+	if(image.is_null() || image->is_empty()){
+		Array* array = memnew(Array);
+
+		uint8_t* pixelPtr = (uint8_t*)mat.data;
+		int cn = mat.channels();
+		cv::Scalar_<uint8_t> bgrPixel;
+
+		for(int i = 0; i < mat.rows; i++)
+		{
+			for(int j = 0; j < mat.cols; j++)
+			{
+				auto B = pixelPtr[i*mat.cols*cn + j*cn + 0]; // B
+				auto G = pixelPtr[i*mat.cols*cn + j*cn + 1]; // G
+				auto R = pixelPtr[i*mat.cols*cn + j*cn + 2]; // R
+				
+				// do something with BGR values...
+				array->append(R);
+				array->append(G);
+				array->append(B);
+			}
+		}
+
+		image = Image::create_from_data (mat.cols, mat.rows, false, Image::Format::FORMAT_RGB8, PackedByteArray(*array));
+	}
+
 	return image;
 }
 
-void Mat::setImage(Ref<Image> _image){
+void Mat::set_image(Ref<Image> _image){
 
     image = _image;
 }
 
+void Mat::set_mat(cv::Mat _mat){
+
+    mat = _mat;
+}
+
+cv::Mat Mat::get_mat(){
+
+    return mat;
+}
+
 void Mat::_bind_methods(){
-	ClassDB::bind_method( D_METHOD( "get_Image" ),
-                                 &Mat::getImage );
-    ClassDB::bind_method( D_METHOD( "set_Image", "Image" ),
-                                 &Mat::setImage );
+	ClassDB::bind_method( D_METHOD( "get_image" ),
+                                 &Mat::get_image );
+    ClassDB::bind_method( D_METHOD( "set_image", "Image" ),
+                                 &Mat::set_image );
 }
 
 
@@ -56,10 +97,18 @@ OpenCVGodot::~OpenCVGodot()
     UtilityFunctions::print( "Destructor." );
 }
 
-// Methods.
-void OpenCVGodot::simpleFunc()
-{
-    UtilityFunctions::print( "  Simple func called." );
+// Arithmetic Operations
+Ref<Mat> OpenCVGodot::subtract(Ref<Mat> mat1, Ref<Mat> mat2) {
+	cv::Mat outMat;
+	Ref<Mat> output = Ref<Mat>(memnew(Mat));
+	auto mask = Ref<Mat>(memnew(Mat));
+	auto dtype = -1;
+
+	cv::subtract(mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat(), dtype);
+
+	output->set_mat(outMat);
+
+	return output;
 }
 
 void OpenCVGodot::emitCustomSignal( const String &inName, int inValue )
@@ -68,10 +117,10 @@ void OpenCVGodot::emitCustomSignal( const String &inName, int inValue )
 }
 
 // Static methods
-Ref<Image> OpenCVGodot::takePicture( )
+Ref<Mat> OpenCVGodot::takePicture( )
 {
 
-	auto empty = Ref<Image>(memnew(Image));
+	auto empty = Ref<Mat>(memnew(Mat));
 
 	cv::Mat frame;
 
@@ -79,10 +128,6 @@ Ref<Image> OpenCVGodot::takePicture( )
 
 	int deviceID = 0; // 0 = open default camera
 	int apiID = cv::CAP_ANY; // 0 = autodetect default API
-	UtilityFunctions::print( deviceID );
-	UtilityFunctions::print( apiID );
-
-	
 
 	cap.open(deviceID, apiID);
 
@@ -99,45 +144,18 @@ Ref<Image> OpenCVGodot::takePicture( )
 		return empty;
 	}
 
-	
+	empty->set_mat(frame);
 
-	Array* array = memnew(Array);
-
-	uint8_t* pixelPtr = (uint8_t*)frame.data;
-	int cn = frame.channels();
-	cv::Scalar_<uint8_t> bgrPixel;
-
-	for(int i = 0; i < frame.rows; i++)
-	{
-		for(int j = 0; j < frame.cols; j++)
-		{
-			auto B = pixelPtr[i*frame.cols*cn + j*cn + 0]; // B
-			auto G = pixelPtr[i*frame.cols*cn + j*cn + 1]; // G
-			auto R = pixelPtr[i*frame.cols*cn + j*cn + 2]; // R
-			
-			// do something with BGR values...
-			array->append(R);
-			array->append(G);
-			array->append(B);
-		}
-	}
-	
-	
-
-	UtilityFunctions::print( array );
-
-	auto output = Image::create_from_data (frame.cols, frame.rows, false, Image::Format::FORMAT_RGB8, PackedByteArray(*array));
-
-	return output;
+	return empty;
 }
 
 void OpenCVGodot::_bind_methods()
 {
     // Methods.
-    ClassDB::bind_method( D_METHOD( "simple_func" ), &OpenCVGodot::simpleFunc );
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "take_picture" ),
                                         &OpenCVGodot::takePicture );
-
+	ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "subtract" ),
+                                        &OpenCVGodot::subtract );
 
 
 
