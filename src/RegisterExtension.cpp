@@ -6,8 +6,8 @@
 #include "godot_cpp/core/defs.hpp"
 #include "godot_cpp/godot.hpp"
 
-#include "OpenCVGodot.h"
 #include "GDExtensionTemplate.h"
+#include "OpenCVGodot.h"
 
 /// @file
 /// Register our classes with Godot.
@@ -26,7 +26,7 @@ namespace
             return;
         }
 
-		godot::ClassDB::register_class<Mat>();
+        godot::ClassDB::register_class<Mat>();
         godot::ClassDB::register_class<OpenCVGodot>();
         godot::ClassDB::register_class<GDExtensionTemplate>();
     }

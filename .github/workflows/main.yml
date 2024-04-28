@@ -46,6 +46,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ccache ninja-build
+          sudo apt-get install python2.7
 
       - name: Install Dependencies (Windows)
         if: matrix.config.os == 'windows-latest'
@@ -61,6 +62,12 @@ jobs:
         with:
           max-size: '10G'
           key: ${{ matrix.config.os }}-${{ matrix.build_type }}
+
+      - name: Install OpenCV
+        uses: Dovyski/setup-opencv-action@v1.1
+        with:
+          opencv-version: '4.2.0'
+          install-deps: false
 
       - name: Configure
         run: >
