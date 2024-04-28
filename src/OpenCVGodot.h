@@ -47,28 +47,25 @@ public:
     OpenCVGodot();
     ~OpenCVGodot() override;
 
-    static Ref<Mat> subtract( Ref<Mat> mat1, Ref<Mat> mat2 );
-
-    void emitCustomSignal( const String &inName, int inValue );
-
-    // Static method.
+    // Added methods.
     static Ref<Mat> takePicture();
+
+    // Core
+    static Ref<Mat> add( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
+    static Ref<Mat> subtract( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
+    static Ref<Mat> max( Ref<Mat> mat1, Ref<Mat> mat2 );
+	static Ref<Mat> min( Ref<Mat> mat1, Ref<Mat> mat2 );
+	static Ref<Mat> absdiff( Ref<Mat> mat1, Ref<Mat> mat2 );
+	static Ref<Mat> vconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
+	static Ref<Mat> hconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
 
 protected:
     static void _bind_methods();
 
-    void _notification( int inWhat );
-    bool _set( const StringName &inName, const Variant &inValue );
-    bool _get( const StringName &inName, Variant &outReturn ) const;
-    void _get_property_list( List<PropertyInfo> *outList ) const;
-    bool _property_can_revert( const StringName &inName ) const;
-    bool _property_get_revert( const StringName &inName, Variant &outProperty ) const;
-    void _validate_property( PropertyInfo &inProperty ) const;
-
-    String _to_string() const;
-
-private:
-    Vector2 mCustomPosition;
-    Vector3 mPropertyFromList;
-    Vector2 mDProp[3];
+    static Ref<Mat> arithmetic_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
+                                                        cv::OutputArray, cv::InputArray, int ),
+                                        Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
+	static Ref<Mat> mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
+                                                        cv::OutputArray ),
+                                        Ref<Mat> mat1, Ref<Mat> mat2 );
 };
