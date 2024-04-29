@@ -47,17 +47,21 @@ public:
     OpenCVGodot();
     ~OpenCVGodot() override;
 
-    // Added methods.
+    // Helper methods.
     static Ref<Mat> takePicture();
 
     // Core
     static Ref<Mat> add( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
     static Ref<Mat> subtract( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
     static Ref<Mat> max( Ref<Mat> mat1, Ref<Mat> mat2 );
-	static Ref<Mat> min( Ref<Mat> mat1, Ref<Mat> mat2 );
-	static Ref<Mat> absdiff( Ref<Mat> mat1, Ref<Mat> mat2 );
-	static Ref<Mat> vconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
-	static Ref<Mat> hconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> min( Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> absdiff( Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> vconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> hconcat( Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> bitwise_and( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
+    static Ref<Mat> bitwise_or( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
+    static Ref<Mat> bitwise_xor( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
+    static Ref<Mat> bitwise_not( Ref<Mat> mat, Ref<Mat> mask );
 
 protected:
     static void _bind_methods();
@@ -65,7 +69,10 @@ protected:
     static Ref<Mat> arithmetic_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
                                                         cv::OutputArray, cv::InputArray, int ),
                                         Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
-	static Ref<Mat> mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
-                                                        cv::OutputArray ),
-                                        Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
+                                                                   cv::OutputArray ),
+                                                   Ref<Mat> mat1, Ref<Mat> mat2 );
+    static Ref<Mat> bitwise_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
+                                                     cv::OutputArray, cv::InputArray ),
+                                     Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
 };

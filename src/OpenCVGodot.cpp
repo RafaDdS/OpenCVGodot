@@ -139,34 +139,34 @@ Ref<Mat> OpenCVGodot::arithmetic_wrapper( void ( *func )( cv::InputArray, cv::In
 // MaxMin
 Ref<Mat> OpenCVGodot::max( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-    return mat_in_mat_in_mat_out_wrapper(&cv::max, mat1, mat2);
+    return mat_in_mat_in_mat_out_wrapper( &cv::max, mat1, mat2 );
 }
 
 Ref<Mat> OpenCVGodot::min( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-    return mat_in_mat_in_mat_out_wrapper(&cv::min, mat1, mat2);
+    return mat_in_mat_in_mat_out_wrapper( &cv::min, mat1, mat2 );
 }
 
 Ref<Mat> OpenCVGodot::absdiff( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-    return mat_in_mat_in_mat_out_wrapper(&cv::absdiff, mat1, mat2);
+    return mat_in_mat_in_mat_out_wrapper( &cv::absdiff, mat1, mat2 );
 }
 
 Ref<Mat> OpenCVGodot::hconcat( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-    return mat_in_mat_in_mat_out_wrapper(&cv::hconcat, mat1, mat2);
+    return mat_in_mat_in_mat_out_wrapper( &cv::hconcat, mat1, mat2 );
 }
 
 Ref<Mat> OpenCVGodot::vconcat( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-    return mat_in_mat_in_mat_out_wrapper(&cv::vconcat, mat1, mat2);
+    return mat_in_mat_in_mat_out_wrapper( &cv::vconcat, mat1, mat2 );
 }
 
 Ref<Mat> OpenCVGodot::mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
                                                                      cv::OutputArray ),
                                                      Ref<Mat> mat1, Ref<Mat> mat2 )
 {
-	cv::Mat outMat;
+    cv::Mat outMat;
     Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
 
     func( mat1->get_mat(), mat2->get_mat(), outMat );
@@ -176,7 +176,58 @@ Ref<Mat> OpenCVGodot::mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputAr
     return output;
 }
 
-// Added methods
+Ref<Mat> OpenCVGodot::bitwise_and( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask )
+{
+    return bitwise_wrapper( &cv::bitwise_and, mat1, mat2, mask );
+}
+
+Ref<Mat> OpenCVGodot::bitwise_or( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask )
+{
+    return bitwise_wrapper( &cv::bitwise_or, mat1, mat2, mask );
+}
+
+Ref<Mat> OpenCVGodot::bitwise_xor( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask )
+{
+    return bitwise_wrapper( &cv::bitwise_xor, mat1, mat2, mask );
+}
+
+Ref<Mat> OpenCVGodot::bitwise_not( Ref<Mat> mat, Ref<Mat> mask )
+{
+    cv::Mat outMat;
+    Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
+
+    if ( mask.is_null() )
+    {
+        mask = Ref<Mat>( memnew( Mat ) );
+    }
+
+    cv::bitwise_not( mat->get_mat(), outMat, mask->get_mat() );
+
+    output->set_mat( outMat );
+
+    return output;
+}
+
+Ref<Mat> OpenCVGodot::bitwise_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
+                                                       cv::OutputArray, cv::InputArray ),
+                                       Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask )
+{
+    cv::Mat outMat;
+    Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
+
+    if ( mask.is_null() )
+    {
+        mask = Ref<Mat>( memnew( Mat ) );
+    }
+
+    func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat() );
+
+    output->set_mat( outMat );
+
+    return output;
+}
+
+// Helper methods
 Ref<Mat> OpenCVGodot::takePicture()
 {
     auto empty = Ref<Mat>( memnew( Mat ) );
@@ -211,7 +262,7 @@ Ref<Mat> OpenCVGodot::takePicture()
 
 void OpenCVGodot::_bind_methods()
 {
-    // Added Methods
+    // Helper Methods
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "take_picture" ),
                                  &OpenCVGodot::takePicture );
     // Core
@@ -221,12 +272,20 @@ void OpenCVGodot::_bind_methods()
                                  "mat1", "mat2", "mask", "dType" );
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "max" ), &OpenCVGodot::max, "mat1",
                                  "mat2" );
-	ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "min" ), &OpenCVGodot::min, "mat1",
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "min" ), &OpenCVGodot::min, "mat1",
                                  "mat2" );
-	ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "absdiff" ), &OpenCVGodot::absdiff, "mat1",
-                                 "mat2" );
-	ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "vconcat" ), &OpenCVGodot::vconcat, "mat1",
-                                 "mat2" );
-	ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "hconcat" ), &OpenCVGodot::hconcat, "mat1",
-                                 "mat2" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "absdiff" ), &OpenCVGodot::absdiff,
+                                 "mat1", "mat2" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "vconcat" ), &OpenCVGodot::vconcat,
+                                 "mat1", "mat2" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "hconcat" ), &OpenCVGodot::hconcat,
+                                 "mat1", "mat2" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "bitwise_and" ),
+                                 &OpenCVGodot::bitwise_and, "mat1", "mat2", "mask" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "bitwise_or" ), &OpenCVGodot::bitwise_or,
+                                 "mat1", "mat2", "mask" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "bitwise_xor" ),
+                                 &OpenCVGodot::bitwise_xor, "mat1", "mat2", "mask" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "bitwise_not" ),
+                                 &OpenCVGodot::bitwise_not, "mat", "mask" );
 }
