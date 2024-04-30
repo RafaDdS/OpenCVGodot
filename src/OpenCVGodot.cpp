@@ -1,5 +1,3 @@
-// Copied from godot-cpp/test/src and modified.
-
 #include "godot_cpp/classes/global_constants.hpp"
 #include "godot_cpp/classes/image.hpp"
 #include "godot_cpp/classes/label.hpp"
@@ -35,6 +33,14 @@ Mat::Mat( String path )
 
 Mat::~Mat()
 {
+    try
+    {
+        mat.release();
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
 }
 
 void Mat::content()
@@ -55,9 +61,9 @@ Ref<Image> Mat::get_image()
         {
             for ( int j = 0; j < mat.cols; j++ )
             {
-                auto B = pixelPtr[i * mat.cols * cn + j * cn + 0]; // B
-                auto G = pixelPtr[i * mat.cols * cn + j * cn + 1]; // G
-                auto R = pixelPtr[i * mat.cols * cn + j * cn + 2]; // R
+                uint8_t B = pixelPtr[i * mat.cols * cn + j * cn + 0]; // B
+                uint8_t G = pixelPtr[i * mat.cols * cn + j * cn + 1]; // G
+                uint8_t R = pixelPtr[i * mat.cols * cn + j * cn + 2]; // R
 
                 // do something with BGR values...
                 array->append( R );
@@ -130,13 +136,21 @@ Ref<Mat> OpenCVGodot::arithmetic_wrapper( void ( *func )( cv::InputArray, cv::In
         mask = Ref<Mat>( memnew( Mat ) );
     }
 
-    func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat(), dtype );
+    try
+    {
+        func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat(), dtype );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
 
     output->set_mat( outMat );
 
     return output;
 }
-// MaxMin
+
+// Mat in mat in mat out
 Ref<Mat> OpenCVGodot::max( Ref<Mat> mat1, Ref<Mat> mat2 )
 {
     return mat_in_mat_in_mat_out_wrapper( &cv::max, mat1, mat2 );
@@ -169,13 +183,21 @@ Ref<Mat> OpenCVGodot::mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputAr
     cv::Mat outMat;
     Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
 
-    func( mat1->get_mat(), mat2->get_mat(), outMat );
+    try
+    {
+        func( mat1->get_mat(), mat2->get_mat(), outMat );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
 
     output->set_mat( outMat );
 
     return output;
 }
 
+// Bitwise operations
 Ref<Mat> OpenCVGodot::bitwise_and( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask )
 {
     return bitwise_wrapper( &cv::bitwise_and, mat1, mat2, mask );
@@ -220,7 +242,60 @@ Ref<Mat> OpenCVGodot::bitwise_wrapper( void ( *func )( cv::InputArray, cv::Input
         mask = Ref<Mat>( memnew( Mat ) );
     }
 
-    func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat() );
+    try
+    {
+        func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat() );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
+
+    output->set_mat( outMat );
+
+    return output;
+}
+
+// Mat in mat out
+Ref<Mat> OpenCVGodot::convertFp16( Ref<Mat> mat )
+{
+    return mat_in_mat_out_wrapper( &cv::convertFp16, mat );
+}
+
+Ref<Mat> OpenCVGodot::exp( Ref<Mat> mat )
+{
+    return mat_in_mat_out_wrapper( &cv::exp, mat );
+}
+
+Ref<Mat> OpenCVGodot::log( Ref<Mat> mat )
+{
+    return mat_in_mat_out_wrapper( &cv::log, mat );
+}
+
+Ref<Mat> OpenCVGodot::sqrt( Ref<Mat> mat )
+{
+    return mat_in_mat_out_wrapper( &cv::sqrt, mat );
+}
+
+Ref<Mat> OpenCVGodot::transpose( Ref<Mat> mat )
+{
+    return mat_in_mat_out_wrapper( &cv::transpose, mat );
+}
+
+Ref<Mat> OpenCVGodot::mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::OutputArray ),
+                                              Ref<Mat> mat )
+{
+    cv::Mat outMat;
+    Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
+
+    try
+    {
+        func( mat->get_mat(), outMat );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
 
     output->set_mat( outMat );
 
@@ -228,9 +303,9 @@ Ref<Mat> OpenCVGodot::bitwise_wrapper( void ( *func )( cv::InputArray, cv::Input
 }
 
 // Helper methods
-Ref<Mat> OpenCVGodot::takePicture()
+Ref<Mat> OpenCVGodot::take_picture()
 {
-    auto empty = Ref<Mat>( memnew( Mat ) );
+    Ref<Mat> empty = Ref<Mat>( memnew( Mat ) );
 
     cv::Mat frame;
 
@@ -264,7 +339,7 @@ void OpenCVGodot::_bind_methods()
 {
     // Helper Methods
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "take_picture" ),
-                                 &OpenCVGodot::takePicture );
+                                 &OpenCVGodot::take_picture );
     // Core
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "add" ), &OpenCVGodot::add, "mat1",
                                  "mat2", "mask", "dType" );
@@ -288,4 +363,11 @@ void OpenCVGodot::_bind_methods()
                                  &OpenCVGodot::bitwise_xor, "mat1", "mat2", "mask" );
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "bitwise_not" ),
                                  &OpenCVGodot::bitwise_not, "mat", "mask" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "convertFp16" ),
+                                 &OpenCVGodot::convertFp16, "mat" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "exp" ), &OpenCVGodot::exp, "mat" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "log" ), &OpenCVGodot::log, "mat" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "sqrt" ), &OpenCVGodot::sqrt, "mat" );
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "transpose" ), &OpenCVGodot::transpose,
+                                 "mat" );
 }

@@ -48,7 +48,7 @@ public:
     ~OpenCVGodot() override;
 
     // Helper methods.
-    static Ref<Mat> takePicture();
+    static Ref<Mat> take_picture();
 
     // Core
     static Ref<Mat> add( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask, int dtype );
@@ -62,6 +62,11 @@ public:
     static Ref<Mat> bitwise_or( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
     static Ref<Mat> bitwise_xor( Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
     static Ref<Mat> bitwise_not( Ref<Mat> mat, Ref<Mat> mask );
+    static Ref<Mat> convertFp16( Ref<Mat> mat );
+    static Ref<Mat> exp( Ref<Mat> mat );
+    static Ref<Mat> log( Ref<Mat> mat );
+    static Ref<Mat> sqrt( Ref<Mat> mat );
+    static Ref<Mat> transpose( Ref<Mat> mat );
 
 protected:
     static void _bind_methods();
@@ -75,4 +80,6 @@ protected:
     static Ref<Mat> bitwise_wrapper( void ( *func )( cv::InputArray, cv::InputArray,
                                                      cv::OutputArray, cv::InputArray ),
                                      Ref<Mat> mat1, Ref<Mat> mat2, Ref<Mat> mask );
+    static Ref<Mat> mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv::OutputArray ),
+                                            Ref<Mat> mat );
 };

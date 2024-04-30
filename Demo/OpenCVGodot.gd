@@ -18,6 +18,6 @@ func _process(_delta):
 	var mat = OpenCVGodot.take_picture()
 	
 	
-	var p = OpenCVGodot.bitwise_not(mat, null)
+	var p = OpenCVGodot.sqrt(mat)
 	var tex2: ImageTexture = ImageTexture.create_from_image(p.get_image())
 	sprite2.texture = tex2
