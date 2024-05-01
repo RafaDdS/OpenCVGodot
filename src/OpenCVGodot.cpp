@@ -17,18 +17,7 @@ using namespace godot;
 
 Mat::Mat()
 {
-    if ( image == nullptr )
-    {
-        image = Ref<Image>( memnew( Image ) );
-    }
-}
-
-Mat::Mat( String path )
-{
-    if ( image == nullptr )
-    {
-        image = Ref<Image>( memnew( Image ) );
-    }
+    image = Ref<Image>( memnew( Image ) );
 }
 
 Mat::~Mat()
@@ -43,37 +32,23 @@ Mat::~Mat()
     }
 }
 
-void Mat::content()
-{
-}
-
 Ref<Image> Mat::get_image()
 {
     if ( image.is_null() || image->is_empty() )
     {
-        Array *array = memnew( Array );
+        cv::Mat rgbMat;
 
-        uint8_t *pixelPtr = (uint8_t *)mat.data;
-        int cn = mat.channels();
-        cv::Scalar_<uint8_t> bgrPixel;
+        cv::cvtColor( mat, rgbMat, cv::COLOR_BGR2RGB );
+        rgbMat.convertTo( rgbMat, CV_8U );
 
-        for ( int i = 0; i < mat.rows; i++ )
-        {
-            for ( int j = 0; j < mat.cols; j++ )
-            {
-                uint8_t B = pixelPtr[i * mat.cols * cn + j * cn + 0]; // B
-                uint8_t G = pixelPtr[i * mat.cols * cn + j * cn + 1]; // G
-                uint8_t R = pixelPtr[i * mat.cols * cn + j * cn + 2]; // R
+        int sizear = rgbMat.cols * rgbMat.rows * rgbMat.channels();
 
-                // do something with BGR values...
-                array->append( R );
-                array->append( G );
-                array->append( B );
-            }
-        }
+        PackedByteArray bytes;
+        bytes.resize( sizear );
+        memcpy( bytes.ptrw(), rgbMat.data, sizear );
 
-        image = Image::create_from_data( mat.cols, mat.rows, false, Image::Format::FORMAT_RGB8,
-                                         PackedByteArray( *array ) );
+        image = Image::create_from_data( rgbMat.cols, rgbMat.rows, false,
+                                         Image::Format::FORMAT_RGB8, bytes );
     }
 
     return image;
@@ -85,15 +60,35 @@ void Mat::set_image( Ref<Image> _image )
     image = _image;
 }
 
+int Mat::get_rows()
+{
+    return mat.rows;
+}
+
+int Mat::get_cols()
+{
+    return mat.cols;
+}
+
+void Mat::convert_to( int rtype )
+{
+    try
+    {
+        mat.convertTo( mat, rtype );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
+}
+
 void Mat::set_mat( cv::Mat _mat )
 {
-
     mat = _mat;
 }
 
 cv::Mat Mat::get_mat()
 {
-
     return mat;
 }
 
@@ -101,6 +96,9 @@ void Mat::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD( "get_image" ), &Mat::get_image );
     ClassDB::bind_method( D_METHOD( "set_image", "Image" ), &Mat::set_image );
+    ClassDB::bind_method( D_METHOD( "get_rows" ), &Mat::get_rows );
+    ClassDB::bind_method( D_METHOD( "get_cols" ), &Mat::get_cols );
+    ClassDB::bind_method( D_METHOD( "convert_to" ), &Mat::convert_to );
 }
 
 OpenCVGodot::OpenCVGodot()
@@ -223,7 +221,14 @@ Ref<Mat> OpenCVGodot::bitwise_not( Ref<Mat> mat, Ref<Mat> mask )
         mask = Ref<Mat>( memnew( Mat ) );
     }
 
-    cv::bitwise_not( mat->get_mat(), outMat, mask->get_mat() );
+	try
+    {
+        cv::bitwise_not( mat->get_mat(), outMat, mask->get_mat() );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
 
     output->set_mat( outMat );
 
@@ -291,6 +296,27 @@ Ref<Mat> OpenCVGodot::mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv
     try
     {
         func( mat->get_mat(), outMat );
+    }
+    catch ( cv::Exception &e )
+    {
+        UtilityFunctions::push_error( e.what() );
+    }
+
+    output->set_mat( outMat );
+
+    return output;
+}
+
+// Imgcodecs
+Ref<Mat> OpenCVGodot::imread( String filename )
+{
+    cv::Mat outMat;
+    Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
+
+    try
+    {
+        const char *path = filename.utf8().get_data();
+        outMat = cv::imread( path );
     }
     catch ( cv::Exception &e )
     {
@@ -370,4 +396,8 @@ void OpenCVGodot::_bind_methods()
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "sqrt" ), &OpenCVGodot::sqrt, "mat" );
     ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "transpose" ), &OpenCVGodot::transpose,
                                  "mat" );
+
+    // Imgcodecs
+    ClassDB::bind_static_method( "OpenCVGodot", D_METHOD( "imread" ), &OpenCVGodot::imread,
+                                 "filename" );
 }

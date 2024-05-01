@@ -24,17 +24,19 @@ protected:
 
 public:
     Mat();
-    Mat( String path );
     ~Mat();
 
     Ref<Image> image;
     Ref<Image> get_image();
     void set_image( Ref<Image> _image );
 
+    int get_rows();
+    int get_cols();
+
     cv::Mat get_mat();
     void set_mat( cv::Mat _mat );
 
-    void content();
+    void convert_to( int rtype );
 
     cv::Mat mat;
 };
@@ -67,6 +69,9 @@ public:
     static Ref<Mat> log( Ref<Mat> mat );
     static Ref<Mat> sqrt( Ref<Mat> mat );
     static Ref<Mat> transpose( Ref<Mat> mat );
+
+    // Imgcodecs
+    static Ref<Mat> imread( String filename );
 
 protected:
     static void _bind_methods();
