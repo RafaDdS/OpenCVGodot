@@ -25,7 +25,7 @@ jobs:
         build_type: ['Debug', 'Release']
         config:
           - { name: '🍏 macOS Clang', os: macos-latest }
-          - { name: '🐧 Linux GCC', os: ubuntu-latest }
+          - { name: '🐧 Linux GCC', os: ubuntu-20.04 }
           - { name: '🪟 Windows MSVC', os: windows-latest }
 
     name: 🛠 Build / ${{ matrix.config.name }} (${{ matrix.build_type }})
@@ -33,20 +33,31 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
       - name: Install Dependencies (macOS)
         if: matrix.config.os == 'macos-latest'
-        run: brew install ccache ninja
+        run: |
+          brew install ccache ninja
+          ruby - e  "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null  2 > /dev/null
+          brew reinstall --build-from-source cmake
+          ln -s /usr/local/Cellar/cmake/3.27.1 /usr/local/Cellar/cmake/3.26.4
+          brew install create-dmg
+          ruby - e  "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null  2 > /dev/null
+          brew install --build-from-source cmake
+          git clone https://github.com/opencv/opencv.git --branch 4.0.0 --depth 1
+          cmake -S opencv -B opencv/build -D ENABLE_PRECOMPILED_HEADERS=OFF -D WITH_MSMF=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D BUILD_WITH_DEBUG_INFO=OFF -D BUILD_DOCS=OFF -D WITH_JPEG=OFF -D WITH_FFMPEG=OFF -D CMAKE_BUILD_TYPE=RELEASE
+          cd ./opencv/build
+          make
+          sudo make install
 
       - name: Install Dependencies (Linux)
-        if: matrix.config.os == 'ubuntu-latest'
+        if: matrix.config.os == 'ubuntu-20.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y ccache ninja-build
-          sudo apt-get install python2.7
 
       - name: Install Dependencies (Windows)
         if: matrix.config.os == 'windows-latest'
@@ -63,11 +74,37 @@ jobs:
           max-size: '10G'
           key: ${{ matrix.config.os }}-${{ matrix.build_type }}
 
-      - name: Install OpenCV
+      - name: Setup OpenCV
+        if: matrix.config.os == 'ubuntu-20.04'
         uses: Dovyski/setup-opencv-action@v1.1
         with:
           opencv-version: '4.2.0'
-          install-deps: false
+
+      - name: Cache opencv
+        if: matrix.config.os == 'windows-latest'
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-opencv
+        with:
+          path: |
+            C:/opencv4.0.0
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: build opencv
+        if: matrix.config.os == 'windows-latest'
+        run: |
+          $c="C:\opencv4.0.0"
+          if(-not (Test-Path $c))
+          {
+            git clone https://github.com/opencv/opencv.git --branch 4.0.0 --depth 1
+            cmake -G "MinGW Makefiles" -S opencv -B opencv/build -D CMAKE_INSTALL_PREFIX=C:/opencv4.0.0 -D ENABLE_PRECOMPILED_HEADERS=OFF -D WITH_MSMF=OFF -D BUILD_PERF_TESTS=OFF -D BUILD_TESTS=OFF -D BUILD_WITH_DEBUG_INFO=OFF -D BUILD_DOCS=OFF -D CMAKE_BUILD_TYPE=RELEASE
+            cd ./opencv/build
+            mingw32-make
+            mingw32-make install
+          }
 
       - name: Configure
         run: >
@@ -92,7 +129,7 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-Debug
           path: |
-            ${{ github.workspace }}/install-${{ matrix.build_type }}/*
+            ${{ github.workspace }}/Demo/bin/*
 
       - name: Upload artifact (Release)
         if: matrix.build_type == 'Release'
@@ -100,4 +137,4 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-Release
           path: |
-            ${{ github.workspace }}/install-${{ matrix.build_type }}/*
+            ${{ github.workspace }}/Demo/bin/*

@@ -221,7 +221,7 @@ Ref<Mat> OpenCVGodot::bitwise_not( Ref<Mat> mat, Ref<Mat> mask )
         mask = Ref<Mat>( memnew( Mat ) );
     }
 
-	try
+    try
     {
         cv::bitwise_not( mat->get_mat(), outMat, mask->get_mat() );
     }
