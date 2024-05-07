@@ -41,6 +41,26 @@ public:
     cv::Mat mat;
 };
 
+class VideoCapture : public RefCounted
+{
+    GDCLASS( VideoCapture, RefCounted )
+
+protected:
+    static void _bind_methods();
+
+public:
+    VideoCapture();
+    ~VideoCapture();
+
+    void open( int index, int api );
+    void release();
+    Ref<Mat> read();
+
+    bool is_opened();
+
+    cv::VideoCapture cap;
+};
+
 class OpenCVGodot : public Node
 {
     GDCLASS( OpenCVGodot, Node )

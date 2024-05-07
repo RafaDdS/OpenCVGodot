@@ -27,6 +27,7 @@ namespace
         }
 
         godot::ClassDB::register_class<Mat>();
+        godot::ClassDB::register_class<VideoCapture>();
         godot::ClassDB::register_class<OpenCVGodot>();
     }
 

@@ -30,7 +30,7 @@ Mat::~Mat()
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -84,7 +84,7 @@ void Mat::convert_to( int rtype )
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -107,6 +107,96 @@ void Mat::_bind_methods()
     ClassDB::bind_method( D_METHOD( "get_rows" ), &Mat::get_rows );
     ClassDB::bind_method( D_METHOD( "get_cols" ), &Mat::get_cols );
     ClassDB::bind_method( D_METHOD( "convert_to" ), &Mat::convert_to );
+}
+
+VideoCapture::VideoCapture()
+{
+}
+VideoCapture::~VideoCapture()
+{
+}
+
+void VideoCapture::open( int index, int api )
+{
+    try
+    {
+        cap.open( index, api );
+    }
+    catch ( cv::Exception &cve )
+    {
+        UtilityFunctions::push_error( cve.what() );
+    }
+    catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
+    }
+}
+
+Ref<Mat> VideoCapture::read()
+{
+    cv::Mat outMat;
+    Ref<Mat> output = Ref<Mat>( memnew( Mat ) );
+
+    try
+    {
+        cap.read( outMat );
+    }
+    catch ( cv::Exception &cve )
+    {
+        UtilityFunctions::push_error( cve.what() );
+    }
+    catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
+    }
+
+    output->set_mat( outMat );
+
+    return output;
+}
+
+bool VideoCapture::is_opened()
+{
+    bool output = false;
+
+    try
+    {
+        output = cap.isOpened();
+    }
+    catch ( cv::Exception &cve )
+    {
+        UtilityFunctions::push_error( cve.what() );
+    }
+    catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
+    }
+
+    return output;
+}
+
+void VideoCapture::release()
+{
+    try
+    {
+        cap.release();
+    }
+    catch ( cv::Exception &cve )
+    {
+        UtilityFunctions::push_error( cve.what() );
+    }
+    catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
+    }
+}
+
+void VideoCapture::_bind_methods()
+{
+    ClassDB::bind_method( D_METHOD( "open", "index", "api_preference" ), &VideoCapture::open );
+    ClassDB::bind_method( D_METHOD( "release" ), &VideoCapture::release );
+    ClassDB::bind_method( D_METHOD( "read" ), &VideoCapture::read );
+    ClassDB::bind_method( D_METHOD( "is_opened" ), &VideoCapture::is_opened );
 }
 
 OpenCVGodot::OpenCVGodot()
@@ -150,7 +240,7 @@ Ref<Mat> OpenCVGodot::arithmetic_wrapper( void ( *func )( cv::InputArray, cv::In
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -201,7 +291,7 @@ Ref<Mat> OpenCVGodot::mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputAr
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -245,7 +335,7 @@ Ref<Mat> OpenCVGodot::bitwise_not( Ref<Mat> mat, Ref<Mat> mask )
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -275,7 +365,7 @@ Ref<Mat> OpenCVGodot::bitwise_wrapper( void ( *func )( cv::InputArray, cv::Input
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -325,7 +415,7 @@ Ref<Mat> OpenCVGodot::mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }
@@ -350,7 +440,7 @@ Ref<Mat> OpenCVGodot::imread( String filename )
     {
         UtilityFunctions::push_error( cve.what() );
     }
-	catch ( std::exception &stde )
+    catch ( std::exception &stde )
     {
         UtilityFunctions::push_error( stde.what() );
     }

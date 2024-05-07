@@ -3,7 +3,32 @@
 [ext_resource type="Script" path="res://OpenCVGodot.gd" id="1_4csjv"]
 [ext_resource type="Texture2D" uid="uid://dqudjgwcrne8y" path="res://icon.svg" id="2_syfq2"]
 
-[node name="Node2D" type="Node2D"]
+[node name="Node" type="Node"]
+
+[node name="Interface" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -66.0
+offset_right = 68.0
+grow_vertical = 0
+
+[node name="Open" type="Button" parent="Interface/VBoxContainer"]
+layout_mode = 2
+text = "Open"
+
+[node name="Release" type="Button" parent="Interface/VBoxContainer"]
+layout_mode = 2
+text = "Release"
 
 [node name="OpenCVGodot" type="OpenCVGodot" parent="."]
 script = ExtResource("1_4csjv")
@@ -19,3 +44,6 @@ texture = ExtResource("2_syfq2")
 [node name="Sprite3" type="Sprite2D" parent="OpenCVGodot"]
 position = Vector2(545, 456)
 texture = ExtResource("2_syfq2")
+
+[connection signal="pressed" from="Interface/VBoxContainer/Open" to="OpenCVGodot" method="_on_open_pressed"]
+[connection signal="pressed" from="Interface/VBoxContainer/Release" to="OpenCVGodot" method="_on_button_pressed"]
