@@ -3,3 +3,4 @@ CMakeLists.txt.user
 /GDExtensionTemplate-build
 /Demo/.godot
 /Demo/bin
+Demo/export_presets.cfg

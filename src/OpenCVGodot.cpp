@@ -26,9 +26,13 @@ Mat::~Mat()
     {
         mat.release();
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 }
 
@@ -76,9 +80,13 @@ void Mat::convert_to( int rtype )
     {
         mat.convertTo( mat, rtype );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 }
 
@@ -138,9 +146,13 @@ Ref<Mat> OpenCVGodot::arithmetic_wrapper( void ( *func )( cv::InputArray, cv::In
     {
         func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat(), dtype );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
@@ -185,9 +197,13 @@ Ref<Mat> OpenCVGodot::mat_in_mat_in_mat_out_wrapper( void ( *func )( cv::InputAr
     {
         func( mat1->get_mat(), mat2->get_mat(), outMat );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
@@ -225,9 +241,13 @@ Ref<Mat> OpenCVGodot::bitwise_not( Ref<Mat> mat, Ref<Mat> mask )
     {
         cv::bitwise_not( mat->get_mat(), outMat, mask->get_mat() );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
@@ -251,9 +271,13 @@ Ref<Mat> OpenCVGodot::bitwise_wrapper( void ( *func )( cv::InputArray, cv::Input
     {
         func( mat1->get_mat(), mat2->get_mat(), outMat, mask->get_mat() );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
@@ -297,9 +321,13 @@ Ref<Mat> OpenCVGodot::mat_in_mat_out_wrapper( void ( *func )( cv::InputArray, cv
     {
         func( mat->get_mat(), outMat );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
@@ -318,9 +346,13 @@ Ref<Mat> OpenCVGodot::imread( String filename )
         const char *path = filename.utf8().get_data();
         outMat = cv::imread( path );
     }
-    catch ( cv::Exception &e )
+    catch ( cv::Exception &cve )
     {
-        UtilityFunctions::push_error( e.what() );
+        UtilityFunctions::push_error( cve.what() );
+    }
+	catch ( std::exception &stde )
+    {
+        UtilityFunctions::push_error( stde.what() );
     }
 
     output->set_mat( outMat );
