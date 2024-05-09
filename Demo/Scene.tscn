@@ -30,6 +30,10 @@ text = "Open"
 layout_mode = 2
 text = "Release"
 
+[node name="TakePic" type="Button" parent="Interface/VBoxContainer"]
+layout_mode = 2
+text = "Take a pic"
+
 [node name="OpenCVGodot" type="OpenCVGodot" parent="."]
 script = ExtResource("1_4csjv")
 
@@ -47,3 +51,4 @@ texture = ExtResource("2_syfq2")
 
 [connection signal="pressed" from="Interface/VBoxContainer/Open" to="OpenCVGodot" method="_on_open_pressed"]
 [connection signal="pressed" from="Interface/VBoxContainer/Release" to="OpenCVGodot" method="_on_button_pressed"]
+[connection signal="pressed" from="Interface/VBoxContainer/TakePic" to="OpenCVGodot" method="_on_take_pic_pressed"]

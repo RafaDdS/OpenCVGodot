@@ -25,8 +25,8 @@ func _ready():
 func _process(_delta):
 	if cap.is_opened():
 		var mat = cap.read()
-		mat.convert_to(5)
-		var p = OpenCVGodot.transpose(mat)
+		mat.convert_to(CV.MatType.CV_64F)
+		var p = OpenCVGodot.subtract(mat, pic, null, 0)
 		var tex2: ImageTexture = ImageTexture.create_from_image(p.get_image())
 		sprite2.texture = tex2
 
@@ -36,4 +36,10 @@ func _on_button_pressed():
 
 
 func _on_open_pressed():
-	cap.open(0,0)
+	cap.open(0,CV.VideoCaptureAPIs.CAP_ANY)
+
+
+func _on_take_pic_pressed():
+	pic = cap.read()
+	var tex: ImageTexture = ImageTexture.create_from_image(pic.get_image())
+	sprite.texture = tex

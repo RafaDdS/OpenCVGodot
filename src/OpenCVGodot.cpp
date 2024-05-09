@@ -201,12 +201,10 @@ void VideoCapture::_bind_methods()
 
 OpenCVGodot::OpenCVGodot()
 {
-    UtilityFunctions::print( "Constructor." );
 }
 
 OpenCVGodot::~OpenCVGodot()
 {
-    UtilityFunctions::print( "Destructor." );
 }
 
 // Arithmetic Operations
