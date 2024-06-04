@@ -1,3 +1,6 @@
+# <span style="color:red">Deprecated!!!</span>
+This projecte was fused with [godot-gdextension-opencv](https://github.com/matt-s-clark/godot-gdextension-opencv), I will keep future updates there!
+
 # OpenCVGodot
 
 This is a GDExtension to interface godot projects with the OpenCV library. My long term objective is to fully support OpenCV library, but this is still very early stage, feel free to contact me if you want to contribute.
